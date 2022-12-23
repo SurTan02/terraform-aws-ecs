@@ -1,5 +1,5 @@
 resource "aws_alb" "main"{
-    name = "myapp-load-balancer"
+    name = "load balancer"
     subnets = aws_subnet.public.*.id
     security_groups = [aws_security_group.lb.id]
 }
@@ -20,7 +20,6 @@ resource "aws_alb_target_group" "app" {
         unhealthy_threshold = 3
     }
 }
-
 
 resource "aws_lb_listener" "ecs_alb_listener" {
   load_balancer_arn = aws_alb.main.id

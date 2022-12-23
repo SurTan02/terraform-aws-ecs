@@ -7,7 +7,6 @@ resource "aws_vpc" "main" {
     # cidr_block = "172.17.0.0/16"
 }
 
-# Create var.az_count private subnets, each in a different AZ
 resource "aws_subnet" "private" {
     count = var.az_count
     cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
@@ -15,7 +14,6 @@ resource "aws_subnet" "private" {
     vpc_id = aws_vpc.main.id
 }
 
-# Create var.az_count public subnets, each in a different AZ
 resource "aws_subnet" "public" {
     count = var.az_count
     cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, var.az_count + count.index)
@@ -24,19 +22,16 @@ resource "aws_subnet" "public" {
     map_public_ip_on_launch = true
 }
 
-# Internet gateway for the public subnet
 resource "aws_internet_gateway" "gw"{
     vpc_id = aws_vpc.main.id
 }
 
-# Route the public subnet traffic through the IGW
 resource "aws_route" "internet_access"{
     route_table_id = aws_vpc.main.main_route_table_id
     destination_cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.gw.id
 }
 
-# Create a NAT gateway with an elastic IP for each private subnet to get internet connectivity
 resource "aws_eip" "gw" {
     count = var.az_count
     vpc = true
@@ -49,7 +44,6 @@ resource "aws_nat_gateway" "gw"{
     allocation_id = element(aws_eip.gw.*.id, count.index)
 }
 
-# Create a new route table for the private subnets, make it route non-local traffic through the NAT gateway to the internet
 resource "aws_route_table" "private" {
     count = var.az_count
     vpc_id = aws_vpc.main.id
@@ -60,7 +54,6 @@ resource "aws_route_table" "private" {
     }
 }
 
-# Explicity associate the newly created route tables to the private subnets 
 resource "aws_route_table_association" "private" {
     count = var.az_count
     subnet_id = element(aws_subnet.private.*.id, count.index)

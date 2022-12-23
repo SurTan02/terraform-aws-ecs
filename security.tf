@@ -1,5 +1,5 @@
 resource "aws_security_group" "lb" {
-    name = "myapp-load-balancer-security-group"
+    name = "load-balancer security group"
     description = "controls access to the ALB"
     vpc_id = aws_vpc.main.id
 
@@ -10,6 +10,7 @@ resource "aws_security_group" "lb" {
         cidr_blocks = ["0.0.0.0/0"]
     }
 
+    # Outbound, protocol -1 == "all"
     egress {
         protocol    = "-1"
         from_port   = 0
